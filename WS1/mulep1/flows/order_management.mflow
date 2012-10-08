@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="order_management">
+    <global-element type="http://www.mulesoft.org/schema/mule/twitter/config" name="Twitter Configuration" entity-id="9899b5b5-091b-4c07-ac67-119d79262de4">
+        <properties>
+            <property value="twitter" name="name"/>
+            <property name="accessKey"/>
+            <property name="accessSecret"/>
+            <property value="consumerKey" name="consumerKey"/>
+            <property value="consumerSecret" name="consumerSecret"/>
+            <property value="false" name="useSSL"/>
+            <property name="proxyHost"/>
+            <property name="proxyPort"/>
+            <property name="proxyUsername"/>
+            <property name="proxyPassword"/>
+        </properties>
+        <description>Global Twitter configuration information</description>
+    </global-element>
+    <flow SubFlow="false" name="order_management">
+        <properties>
+            <property name="processingStrategy2"/>
+            <property name="processingStrategy"/>
+            <property name="bussinessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+        </properties>
+        <lane hadOnlyOneElement="false" entity-id="fa037f6f-b646-4b06-b0ec-79c42d5d4582">
+            <endpoint message-exchange-pattern="OneWay" direction="Inbound" type="http://www.mulesoft.org/schema/mule/http/endpoint" name="HTTP" entity-id="174ea274-82cc-4be5-9fd4-2f255bcaa4ca">
+                <properties>
+                    <property value="one-way" name="exchange-pattern"/>
+                    <property value="request-response" name="exchange-pattern"/>
+                    <property value="http://www.mulesoft.org/schema/mule/http/endpoint" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
+                    <property name="httpLabel"/>
+                    <property value="localhost" name="host"/>
+                    <property value="1081" name="port"/>
+                    <property value="orders" name="path"/>
+                    <property name="method"/>
+                    <property name="businessEventsLabel"/>
+                    <property name="tracking:enable-default-events"/>
+                    <property name="address"/>
+                    <property name="encoding"/>
+                    <property name="disableTransportTransformer"/>
+                    <property name="mimeType"/>
+                    <property name="responseTimeout"/>
+                    <property name="followRedirects"/>
+                    <property name="connector-ref"/>
+                    <property name="ref"/>
+                    <property name="transformer-refs"/>
+                    <property name="responseTransformer-refs"/>
+                    <property name="user"/>
+                    <property name="password"/>
+                    <property name="contentType"/>
+                    <property name="keep-alive"/>
+                </properties>
+                <description>Process HTTP request for web service.</description>
+            </endpoint>
+            <response entity-id="d0f8f15b-989d-497a-9b0f-2d07951daca2">
+                <compartment entity-id="caa63cdf-32db-4e18-b113-9d84c327ed61">
+                    <lane hadOnlyOneElement="false" entity-id="edba299e-256b-42b4-9f43-6be0d2c06ad4">
+                        <pattern type="org.mule.tooling.ui.modules.core.pattern.echo" name="Echo" entity-id="df29d571-ce49-4334-a3a7-5d7e4bf83746">
+                            <description>Echoes message payload.</description>
+                        </pattern>
+                    </lane>
+                </compartment>
+            </response>
+            <pattern type="http://www.mulesoft.org/schema/mule/cxf/soapComponent" name="SOAP" entity-id="238bba24-de59-4450-bf68-3c9495ba1bc3">
+                <properties>
+                    <property name="configuration-ref"/>
+                    <property value="http://www.mulesoft.org/schema/mule/cxf/jaxws-service" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
+                    <property name="configuration-ref"/>
+                    <property name="bindingId"/>
+                    <property name="port"/>
+                    <property name="namespace"/>
+                    <property name="service"/>
+                    <property name="onException"/>
+                    <property value="org.ordermgmt.ProcessOrderImpl" name="serviceClass"/>
+                    <property name="validationEnabled"/>
+                    <property name="mtomEnabled"/>
+                    <property name="wsdlLocation"/>
+                    <property name="enableMuleSoapHeaders"/>
+                </properties>
+                <description>Uses CXF to create a JAX-WS web service for processing orders.</description>
+            </pattern>
+            <pattern type="http://www.mulesoft.org/schema/mule/core/component" name="Summary" entity-id="754539e9-c38a-43b2-b921-a5b156d96cff">
+                <properties>
+                    <property value="org.ordermgmt.ProcessOrderImpl" name="class"/>
+                </properties>
+                <description>Creates a summary of the order contents.</description>
+            </pattern>
+            <splitter type="org.mule.tooling.ui.modules.core.pattern.cbr" name="Choice" entity-id="0da8390c-2a34-4a48-bced-bb943ee4c8ad">
+                <properties>
+                    <property-collection name="90ccb751-a180-4f43-9958-c7a1c0af42e0">
+                        <property value="#[ognl:totalPrice &gt; 1000]" name="choice.expression"/>
+                    </property-collection>
+                    <property-collection name="ad786772-bcf3-49c8-addd-190d525c48db">
+                        <property value="#[ognl:totalPrice &gt; 500]" name="choice.expression"/>
+                    </property-collection>
+                    <property-collection name="f0c2fddc-8546-4acf-b327-a9674e0177e4">
+                        <property value="#[ognl:totalPrice &gt; 0]" name="choice.expression"/>
+                    </property-collection>
+                </properties>
+                <pattern type="org.mule.tooling.ui.modules.core.pattern.cbr" name="Choice" entity-id="e73c9cec-cb69-410f-9090-4ad6713b68b6"/>
+                <compartment entity-id="efb4efc6-81f3-4d17-a402-255a62a40cc1">
+                    <lane hadOnlyOneElement="false" entity-id="90ccb751-a180-4f43-9958-c7a1c0af42e0">
+                        <pattern type="http://www.mulesoft.org/schema/mule/core/component" name="30% Discount" entity-id="c769c4a9-6c17-442b-bf13-c8ac2f487c82">
+                            <properties>
+<property value="org.ordermgmt.ThirtyPercentDiscount" name="class"/>
+                            </properties>
+                            <description>Use a 30% discount.</description>
+                        </pattern>
+                    </lane>
+                    <lane hadOnlyOneElement="false" entity-id="ad786772-bcf3-49c8-addd-190d525c48db">
+                        <pattern type="http://www.mulesoft.org/schema/mule/core/component" name="20% Discount" entity-id="06565b9d-2763-4737-8d4d-1f380dbfc5f3">
+                            <properties>
+<property value="org.ordermgmt.TwentyPercentDiscount" name="class"/>
+                            </properties>
+                            <description>Use a 20% discount.</description>
+                        </pattern>
+                    </lane>
+                    <lane hadOnlyOneElement="false" entity-id="f0c2fddc-8546-4acf-b327-a9674e0177e4">
+                        <pattern type="http://www.mulesoft.org/schema/mule/core/component" name="10% Discount" entity-id="6be172e7-9318-4eef-8341-b6aad0c61908">
+                            <properties>
+<property value="org.ordermgmt.TenPercentDiscount" name="class"/>
+                            </properties>
+                            <description>Use a 10% discount.</description>
+                        </pattern>
+                    </lane>
+                </compartment>
+            </splitter>
+            <scope type="http://www.mulesoft.org/schema/mule/core/async" name="Async" entity-id="8cc5eab1-3dd3-4d98-a3b2-e419cec921c8">
+                <properties>
+                    <property name="processingStrategy"/>
+                </properties>
+                <description>Asynchronous block of execution</description>
+                <compartment entity-id="50e421f3-e66a-4e93-ba3c-93368e1fb77f">
+                    <lane hadOnlyOneElement="false" entity-id="2246bfbf-5579-48f5-a30e-3259200fe747">
+                        <pattern type="http://www.mulesoft.org/schema/mule/core/component" name="Create Tweet" entity-id="2885e00d-6ada-47bd-9c89-c8f098d6314c">
+                            <properties>
+<property value="org.ordermgmt.TweetMaker" name="class"/>
+                            </properties>
+                            <description>Creates a message to be sent as a status message to Twitter.</description>
+                        </pattern>
+                        <pattern type="http://www.mulesoft.org/schema/mule/twitter/twitter-connector" name="Update Status" entity-id="7c2dcadf-7d70-4383-a24c-8fa561edcda7">
+                            <properties>
+<property value="twitter" name="config-ref"/>
+<property value="http://www.mulesoft.org/schema/mule/twitter/update-status" name="org.mule.tooling.ui.modules.core.widgets.meta.ModeAttribute"/>
+<property value="twitter" name="config-ref"/>
+<property value="#[payload]" name="status"/>
+<property name="inReplyTo"/>
+<property name="latitude"/>
+<property name="longitude"/>
+                            </properties>
+                            <description>Update Twitter status with message.</description>
+                        </pattern>
+                    </lane>
+                </compartment>
+            </scope>
+        </lane>
+    </flow>
+</mule-configuration>

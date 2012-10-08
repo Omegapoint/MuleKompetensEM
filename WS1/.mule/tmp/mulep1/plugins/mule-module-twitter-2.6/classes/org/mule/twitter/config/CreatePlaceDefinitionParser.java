@@ -1,0 +1,94 @@
+
+package org.mule.twitter.config;
+
+import java.util.List;
+import org.apache.commons.lang.StringUtils;
+import org.mule.config.spring.MuleHierarchicalBeanDefinitionParserDelegate;
+import org.mule.config.spring.util.SpringXMLUtils;
+import org.mule.twitter.processors.CreatePlaceMessageProcessor;
+import org.mule.util.TemplateParser;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.ManagedList;
+import org.springframework.beans.factory.xml.BeanDefinitionParser;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.w3c.dom.Element;
+
+public class CreatePlaceDefinitionParser
+    implements BeanDefinitionParser
+{
+
+    /**
+     * Mule Pattern Info
+     * 
+     */
+    private TemplateParser.PatternInfo patternInfo;
+
+    public CreatePlaceDefinitionParser() {
+        patternInfo = TemplateParser.createMuleStyleParser().getStyle();
+    }
+
+    public BeanDefinition parse(Element element, ParserContext parserContent) {
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(CreatePlaceMessageProcessor.class.getName());
+        String configRef = element.getAttribute("config-ref");
+        if ((configRef!= null)&&(!StringUtils.isBlank(configRef))) {
+            builder.addPropertyValue("moduleObject", configRef);
+        }
+        if ((element.getAttribute("name")!= null)&&(!StringUtils.isBlank(element.getAttribute("name")))) {
+            builder.addPropertyValue("name", element.getAttribute("name"));
+        }
+        if ((element.getAttribute("containedWithin")!= null)&&(!StringUtils.isBlank(element.getAttribute("containedWithin")))) {
+            builder.addPropertyValue("containedWithin", element.getAttribute("containedWithin"));
+        }
+        if ((element.getAttribute("token")!= null)&&(!StringUtils.isBlank(element.getAttribute("token")))) {
+            builder.addPropertyValue("token", element.getAttribute("token"));
+        }
+        if ((element.getAttribute("latitude")!= null)&&(!StringUtils.isBlank(element.getAttribute("latitude")))) {
+            builder.addPropertyValue("latitude", element.getAttribute("latitude"));
+        }
+        if ((element.getAttribute("longitude")!= null)&&(!StringUtils.isBlank(element.getAttribute("longitude")))) {
+            builder.addPropertyValue("longitude", element.getAttribute("longitude"));
+        }
+        if ((element.getAttribute("streetAddress")!= null)&&(!StringUtils.isBlank(element.getAttribute("streetAddress")))) {
+            builder.addPropertyValue("streetAddress", element.getAttribute("streetAddress"));
+        }
+        BeanDefinition definition = builder.getBeanDefinition();
+        definition.setAttribute(MuleHierarchicalBeanDefinitionParserDelegate.MULE_NO_RECURSE, Boolean.TRUE);
+        MutablePropertyValues propertyValues = parserContent.getContainingBeanDefinition().getPropertyValues();
+        if (parserContent.getContainingBeanDefinition().getBeanClassName().equals("org.mule.config.spring.factories.PollingMessageSourceFactoryBean")) {
+            propertyValues.addPropertyValue("messageProcessor", definition);
+        } else {
+            if (parserContent.getContainingBeanDefinition().getBeanClassName().equals("org.mule.enricher.MessageEnricher")) {
+                propertyValues.addPropertyValue("enrichmentMessageProcessor", definition);
+            } else {
+                PropertyValue messageProcessors = propertyValues.getPropertyValue("messageProcessors");
+                if ((messageProcessors == null)||(messageProcessors.getValue() == null)) {
+                    propertyValues.addPropertyValue("messageProcessors", new ManagedList());
+                }
+                List listMessageProcessors = ((List) propertyValues.getPropertyValue("messageProcessors").getValue());
+                listMessageProcessors.add(definition);
+            }
+        }
+        return definition;
+    }
+
+    protected String getAttributeValue(Element element, String attributeName) {
+        if (!StringUtils.isEmpty(element.getAttribute(attributeName))) {
+            return element.getAttribute(attributeName);
+        }
+        return null;
+    }
+
+    private String generateChildBeanName(Element element) {
+        String id = SpringXMLUtils.getNameOrId(element);
+        if (StringUtils.isBlank(id)) {
+            String parentId = SpringXMLUtils.getNameOrId(((Element) element.getParentNode()));
+            return ((("."+ parentId)+":")+ element.getLocalName());
+        } else {
+            return id;
+        }
+    }
+
+}

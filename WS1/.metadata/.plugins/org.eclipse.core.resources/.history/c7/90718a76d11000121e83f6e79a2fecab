@@ -1,0 +1,181 @@
+package org.ordermgmt;
+
+import org.mule.DefaultMuleEvent;
+import org.mule.DefaultMuleMessage;
+import org.mule.api.MuleContext;
+import org.mule.api.MuleEvent;
+import org.mule.api.MuleException;
+import org.mule.api.MuleMessage;
+import org.mule.api.store.ObjectStoreException;
+import org.mule.routing.AbstractAggregator;
+import org.mule.routing.AggregationException;
+import org.mule.routing.EventGroup;
+import org.mule.routing.correlation.CollectionCorrelatorCallback;
+import org.mule.routing.correlation.CorrelationSequenceComparator;
+import org.mule.routing.correlation.EventCorrelatorCallback;
+import org.mule.util.SerializationUtils;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang.SerializationException;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+ 
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
+import org.mule.module.xml.util.XMLUtils;
+import org.dom4j.Element;
+
+import edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArrayList;
+ 
+
+public class XmlCorrelationAgregator extends AbstractAggregator
+{
+    public static final int DEFAULT_BUFFER_SIZE = 4096;
+
+    protected Comparator eventComparator;
+
+    public XmlCorrelationAgregator()
+    {
+        super();
+        eventComparator = new CorrelationSequenceComparator();
+    }
+    
+    private ByteArrayOutputStream parseXml(MuleEvent[] collectedEvents) throws MuleException {
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream(DEFAULT_BUFFER_SIZE);
+    	
+    	Document mainDoc = null;
+		try {
+			mainDoc = XMLUtils.toDocument(new String("<data></data>").getBytes(), muleContext);
+			Element givenNode = mainDoc.getRootElement();//.element("data");
+			
+		   for (MuleEvent event : collectedEvents)
+            {
+	        
+				Document incomingDoc = XMLUtils.toDocument(event.getMessageAsBytes(), muleContext);
+				
+			    //System.out.println(((CopyOnWriteArrayList)event.getMessageAsBytes()).get(0));
+			    System.out.println("--------------");
+			    System.out.println(new String(event.getMessageAsBytes()));
+			    System.out.println("--------------");
+			    System.out.println(incomingDoc.asXML());
+			    System.out.println("-------11-------");
+			    System.out.println(mainDoc.asXML());
+			    			    
+			    givenNode.add(incomingDoc.selectSingleNode("child::client"));
+			    
+            }			
+		   baos.write(mainDoc.asXML().getBytes());
+		   System.out.println("--------2------");
+		    System.out.println(mainDoc.asXML());
+		    System.out.println("--------------");
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return baos;
+    }
+
+    @Override
+    protected EventCorrelatorCallback getCorrelatorCallback(MuleContext muleContext)
+    {
+        return new CollectionCorrelatorCallback(muleContext, persistentStores, storePrefix)
+        {
+            /**
+             * This method is invoked if the shouldAggregate method is called and
+             * returns true. Once this method returns an aggregated message the event
+             * group is removed from the router
+             * 
+             * @param events the event group for this request
+             * @return an aggregated message
+             * @throws org.mule.routing.AggregationException if the aggregation
+             *             fails. in this scenario the whole event group is removed
+             *             and passed to the exception handler for this componenet
+             */
+            @Override
+            public MuleEvent aggregateEvents(EventGroup events) throws AggregationException
+            {
+                MuleEvent[] collectedEvents;
+                try
+                {
+                    collectedEvents = events.toArray(false);
+                }
+                catch (ObjectStoreException e)
+                {
+                    throw new AggregationException(events, XmlCorrelationAgregator.this, e);
+                }
+                MuleEvent firstEvent = collectedEvents[0];
+                Arrays.sort(collectedEvents, eventComparator);
+                //ByteArrayOutputStream baos = new ByteArrayOutputStream(DEFAULT_BUFFER_SIZE);
+                ByteArrayOutputStream baos = null;
+                try
+                {
+                    /*for (MuleEvent event : collectedEvents)
+                    {
+                        baos.write(event.getMessageAsBytes());
+                    }*/
+                	baos = parseXml(collectedEvents);
+
+                    MuleMessage message;
+
+                    // try to deserialize message, since ChunkingRouter might have
+                    // serialized
+                    // the object...
+                    try
+                    {
+                        // must deserialize in correct classloader
+                        final Object deserialized = SerializationUtils.deserialize(baos.toByteArray(),
+                            muleContext);
+                        message = new DefaultMuleMessage(deserialized, firstEvent.getMessage(), muleContext);
+
+                    }
+                    catch (SerializationException e)
+                    {
+                        message = new DefaultMuleMessage(baos.toByteArray(), firstEvent.getMessage(),
+                            muleContext);
+                    }
+
+                    message.setCorrelationGroupSize(-1);
+                    message.setCorrelationSequence(-1);
+
+                    return new DefaultMuleEvent(message, firstEvent, getMergedSession(events.toArray()));
+                }
+                catch (Exception e)
+                {
+                    throw new AggregationException(events, XmlCorrelationAgregator.this, e);
+                }
+                finally
+                {
+                    IOUtils.closeQuietly(baos);
+                }
+            }
+        };
+    }
+
+}

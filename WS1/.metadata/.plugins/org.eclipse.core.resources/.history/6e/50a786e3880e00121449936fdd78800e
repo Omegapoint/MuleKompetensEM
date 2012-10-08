@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf"
+	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/sfdc" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:script="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" version="CE-3.3.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+    http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+    http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+    http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd 
+    http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/4.0/mule-sfdc.xsd 
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+    http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+    http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/3.3/mule-vm.xsd   
+    http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/3.3/mule-scripting.xsd
+    http://www.mulesoft.org/schema/mule/xml	http://www.mulesoft.org/schema/mule/xml/3.3/mule-xml.xsd
+    http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/4.0/mule-sfdc.xsd ">
+	<file:connector name="fcon1" fileAge="500" autoDelete="true"
+		pollingFrequency="100" moveToPattern="#[header:originalFilename].backup" />
+	<!-- <custom-processor name="ca1" class="org.ordermgmt.CustomAgg1" /> <custom-transformer 
+		class="org.ordermgmt.Test1" /> -->
+	<global-property name="id3" value="333" />
+	<!-- <spring:bean id="annotatedTrans" class="org.ordermgmt.Test1" /> -->
+	<mulexml:xslt-transformer name="xslt1"
+		xsl-file="C:\MuleStudio\WS1\xslt\xsl1.xsl">
+	</mulexml:xslt-transformer>
+
+  
+
+
+
+	<flow name="dummy1" doc:name="dummy1">
+		<vm:inbound-endpoint name="work1" path="work.new"
+			exchange-pattern="one-way">
+		</vm:inbound-endpoint>
+
+		<!-- <splitter evaluator="xpath-node" expression="//valid_xml"/> <expression-transformer 
+			expression="#[jxpath://valid_xml]"/> -->
+		<message-properties-transformer>
+			<add-message-property key="id22" value="111" />
+		</message-properties-transformer>
+
+
+		<all enableCorrelation="ALWAYS">
+
+			<vm:outbound-endpoint name="work2" path="work12"
+				exchange-pattern="one-way">
+
+			</vm:outbound-endpoint>
+
+			<flow-ref name="dummy11" />
+			<!-- <flow-ref name="dummy12" /> -->
+
+		</all>
+	</flow>
+
+	<flow name="dummy11">
+		<vm:inbound-endpoint path="work11"
+			exchange-pattern="one-way" />
+		<transformer ref="xslt1" />
+		<mulexml:xml-prettyprinter-transformer
+			suppressDeclaration="true" trimText="true"/>
+		<flow-ref name="dummy2" />
+	</flow>
+
+	<flow name="dummy12">
+		<vm:inbound-endpoint path="work12"
+			exchange-pattern="one-way" />
+			 <mulexml:xpath-extractor-transformer
+				expression="//wallet" resultType="NODE" />
+					<mulexml:xml-prettyprinter-transformer
+			suppressDeclaration="true" trimText="true" />
+			<!-- 	<expression-transformer evaluator="xpath" expression="//wallet" />-->
+		
+		<!-- <mulexml:xslt-transformer>
+			<mulexml:xslt-text>
+				<xsl:stylesheet version="2.0"
+					xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+					<xsl:output method="xml" />
+					<xsl:param name="wallet11" />
+					<xsl:template match="/">
+						   <xsl:copy-of select="$wallet11" />
+        			</xsl:template>
+				</xsl:stylesheet>
+				</mulexml:xslt-text>
+					<mulexml:context-property key="wallet11" 
+						value="#[message:wallet2]"  />
+
+		</mulexml:xslt-transformer>
+		-->
+		<flow-ref name="dummy2" />
+	</flow>
+
+	<flow name="dummy2">
+		<vm:inbound-endpoint path="work.result"
+			exchange-pattern="one-way" />
+
+		<message-properties-transformer scope="session">
+			<add-message-property key="cname" value="nana" />
+		</message-properties-transformer>
+		<echo-component />
+
+		<message-chunk-aggregator timeout="12000"
+			failOnTimeout="true">
+
+			<expression-message-info-mapping
+				messageIdExpression="#[header:id]" correlationIdExpression="#[message:correlationId]" />
+		</message-chunk-aggregator>
+		  <script:transformer name="stringReplaceWithParams">
+        <script:script engine="Groovy">        
+            <script:text>
+                return payload
+            </script:text>
+        </script:script>
+    </script:transformer>
+		
+		<vm:outbound-endpoint name="work4" path="work.result2"
+			exchange-pattern="one-way">
+		</vm:outbound-endpoint>
+	</flow>
+
+</mule>

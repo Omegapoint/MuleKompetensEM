@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:mule-xml="http://www.mulesoft.org/schema/mule/xml"
+	  xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.3/mule.xsd
+        http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/3.3/mule-xml.xsd
+        http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/3.3/mule-vm.xsd">
+        
+
+  <!-- <validator name="WorkAcceptor"
+             inboundEndpoint-ref="NewWorkEndpoint"
+             ackExpression="#[string:OK:#[message:id]]"
+             nackExpression="#[string:NOT_XML]"
+             outboundEndpoint-ref="AcceptedWorkEndpoint">
+    <mule-xml:is-xml-filter/>
+    </validator>
+    -->
+    
+    <flow name="privateFlow">
+  		 <inbound-endpoint ref="NewWorkEndpoint2">
+  		 	<!-- <collection-aggregator timeout="6000" failOnTimeout="true"/> -->
+  		 	<custom-aggregator failOnTimeout="true" class="org.ordermgmt.CustomAggregation"/>
+		 </inbound-endpoint>
+		 <outbound-endpoint ref="AcceptedWorkEndpoint3" /> <!-- add filter to filter out header/detail to me -->
+		
+	</flow>
+
+    <flow name="test11">
+		 <inbound-endpoint ref="NewWorkEndpoint">
+		 	<!-- <collection-aggregator-router/> -->
+		 	
+		 </inbound-endpoint>
+		<!-- <mule-xml:is-xml-filter/> -->
+		<component class="org.ordermgmt.DummyListCreator"/>
+		<collection-splitter enableCorrelation="IF_NOT_SET"/>
+		<echo-component></echo-component>
+		<log-component></log-component>
+		<flow-ref name="privateFlow"/>
+	<!-- 	<all>
+		<outbound-endpoint ref="AcceptedWorkEndpoint" >
+	 		<flow-ref name="privateFlow"/> 
+		</outbound-endpoint>
+		<outbound-endpoint ref="AcceptedWorkEndpoint2" />
+		</all>
+	-->
+	</flow>
+    
+    <!--    
+    <flow name="FlowUsingSubflow">
+  	...
+  	<log-component />
+  	<flow-ref name="DefaultTransformers" />
+  	...
+	</flow>   
+   -->
+  
+  <!--   <custom-correlation-aggregator-router
+   	timeout	= (xsd:string | xsd:int) 
+   	failOnTimeout	= (xsd:string | xsd:boolean)
+   	class	= "com.CustomAggregatorClass"
+   	>
+    Content: spring:property*
+</custom-correlation-aggregator-router>
+   -->
+  
+  <!-- Ok, suppose we returned nice different arraylists of messages which correlated with each other, that is they match each other.
+  so how do we actually put messages together ? what do we put together? enriched detail posts with enriched header post? -->
+</mule>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:mulexml="http://www.mulesoft.org/schema/mule/xml" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:core="http://www.mulesoft.org/schema/mule/core" version="CE-3.3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd 
+http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/current/mule-xml.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd ">
+    <file:connector name="fcon1" autoDelete="true" pollingFrequency="100" moveToPattern="#[header:originalFilename].backup" doc:name="File"/>
+    <global-property name="id3" value="333" doc:name="Global Property"/>
+    <mulexml:xslt-transformer xsl-file="C:\MuleStudio\WS1\xslt\xsl1.xsl" name="xslt1" doc:name="XSLT"/>
+    <mulexml:xslt-transformer xsl-file="C:\MuleStudio\WS1\xslt\xsl2.xsl" name="xslt2" doc:name="XSLT"/>
+    <flow name="oneWayFlow1" doc:name="oneWayFlow1">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="work.new" doc:name="VM"/>
+        <all doc:name="All">
+            <vm:outbound-endpoint exchange-pattern="one-way" path="work12" doc:name="VM"/>
+            <flow-ref name="subFlow1" doc:name="Flow Reference"/>
+        </all>
+    </flow>
+    
+    <flow name="subFlow1" doc:name="subFlow1">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="work11" doc:name="VM"/>
+        <transformer ref="xslt1" doc:name="Transformer Reference"/>
+        <flow-ref name="dummy2" doc:name="Flow Reference"/>
+    </flow>
+    
+    <flow name="subFlow2" doc:name="oneWayFlow12">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="work12" doc:name="VM"/>
+        <flow-ref name="dummy2" doc:name="Flow Reference"/>
+    </flow>
+    
+    <flow name="dummy2" doc:name="dummy2">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="work.result" doc:name="VM"/>
+        <echo-component doc:name="Echo"/>
+        <custom-processor name="xca" class="org.ordermgmt.XmlCorrelationAgregator"></custom-processor>
+        <vm:outbound-endpoint exchange-pattern="one-way" path="work.result2" doc:name="VM"/>
+    </flow>
+</mule>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:mule-xml="http://www.mulesoft.org/schema/mule/xml"
+    xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.3/mule.xsd
+        http://www.mulesoft.org/schema/mule/xml http://www.mulesoft.org/schema/mule/xml/3.3/mule-xml.xsd">
+
+  <validator name="WorkAcceptor"
+             inboundEndpoint-ref="NewWorkEndpoint"
+             ackExpression="#[string:OK:#[message:id]]"
+             nackExpression="#[string:NOT_XML]"
+             outboundEndpoint-ref="AcceptedWorkEndpoint">
+    <mule-xml:is-xml-filter/>
+  </validator>
+</mule>

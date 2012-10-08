@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="mttc">
+    <global-element type="http://www.mulesoft.org/schema/mule/vm/endpoint" name="VM" entity-id="6802d896-b101-4017-8e44-4c5545104f79">
+        <properties>
+            <property value="request-response" name="exchange-pattern"/>
+            <property value="work.new" name="path"/>
+            <property value="NewWorkEndpoint" name="name"/>
+            <property name="businessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="address"/>
+            <property name="responseTimeout"/>
+            <property name="encoding"/>
+            <property name="disableTransportTransformer"/>
+            <property name="mimeType"/>
+            <property name="connector-ref"/>
+            <property name="ref"/>
+            <property name="transformer-refs"/>
+            <property name="responseTransformer-refs"/>
+        </properties>
+    </global-element>
+    <global-element type="http://www.mulesoft.org/schema/mule/vm/endpoint" name="VM" entity-id="1c50743d-6879-426a-b24c-5b3b7f74d834">
+        <properties>
+            <property value="one-way" name="exchange-pattern"/>
+            <property value="work.new2" name="path"/>
+            <property value="NewWorkEndpoint2" name="name"/>
+            <property name="businessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="address"/>
+            <property name="responseTimeout"/>
+            <property name="encoding"/>
+            <property name="disableTransportTransformer"/>
+            <property name="mimeType"/>
+            <property name="connector-ref"/>
+            <property name="ref"/>
+            <property name="transformer-refs"/>
+            <property name="responseTransformer-refs"/>
+        </properties>
+    </global-element>
+    <global-element type="http://www.mulesoft.org/schema/mule/vm/endpoint" name="VM" entity-id="1504bc82-393e-4e47-8e64-335a69275201">
+        <properties>
+            <property value="one-way" name="exchange-pattern"/>
+            <property value="work.ok" name="path"/>
+            <property value="AcceptedWorkEndpoint" name="name"/>
+            <property name="businessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="address"/>
+            <property name="responseTimeout"/>
+            <property name="encoding"/>
+            <property name="disableTransportTransformer"/>
+            <property name="mimeType"/>
+            <property name="connector-ref"/>
+            <property name="ref"/>
+            <property name="transformer-refs"/>
+            <property name="responseTransformer-refs"/>
+        </properties>
+    </global-element>
+    <global-element type="http://www.mulesoft.org/schema/mule/vm/endpoint" name="VM" entity-id="71d9a526-4bb7-4987-8232-415001289ba5">
+        <properties>
+            <property value="one-way" name="exchange-pattern"/>
+            <property value="work.ok2" name="path"/>
+            <property value="AcceptedWorkEndpoint2" name="name"/>
+            <property name="businessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="address"/>
+            <property name="responseTimeout"/>
+            <property name="encoding"/>
+            <property name="disableTransportTransformer"/>
+            <property name="mimeType"/>
+            <property name="connector-ref"/>
+            <property name="ref"/>
+            <property name="transformer-refs"/>
+            <property name="responseTransformer-refs"/>
+        </properties>
+    </global-element>
+    <global-element type="http://www.mulesoft.org/schema/mule/vm/endpoint" name="VM" entity-id="5a03a74b-dfd7-410b-88a9-4e0d3be618b6">
+        <properties>
+            <property value="one-way" name="exchange-pattern"/>
+            <property value="work.ok3" name="path"/>
+            <property value="AcceptedWorkEndpoint3" name="name"/>
+            <property name="businessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="address"/>
+            <property name="responseTimeout"/>
+            <property name="encoding"/>
+            <property name="disableTransportTransformer"/>
+            <property name="mimeType"/>
+            <property name="connector-ref"/>
+            <property name="ref"/>
+            <property name="transformer-refs"/>
+            <property name="responseTransformer-refs"/>
+        </properties>
+    </global-element>
+    <description></description>
+</mule-configuration>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="test1flow1">
+    <global-unknown unknownName="WorkAcceptor" entity-id="f25a1507-d17c-40a7-a061-f409a09d24f7">
+        <content>&lt;validator xmlns=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;WorkAcceptor&quot; inboundEndpoint-ref=&quot;NewWorkEndpoint&quot; ackExpression=&quot;#[string:OK:#[message:id]]&quot; nackExpression=&quot;#[string:NOT_XML]&quot; outboundEndpoint-ref=&quot;AcceptedWorkEndpoint&quot;&gt;
+    &lt;mule-xml:is-xml-filter xmlns:mule-xml=&quot;http://www.mulesoft.org/schema/mule/xml&quot;/&gt;
+  &lt;/validator&gt;</content>
+    </global-unknown>
+    <description></description>
+</mule-configuration>

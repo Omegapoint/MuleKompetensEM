@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mule-configuration xmlns="http://www.mulesoft.com/tooling/messageflow" name="test1">
+    <global-element type="http://www.mulesoft.org/schema/mule/vm/endpoint" name="VM" entity-id="0297a671-282e-4a47-8cf7-3ae102bc66ef">
+        <properties>
+            <property value="request-response" name="exchange-pattern"/>
+            <property value="work.new" name="path"/>
+            <property value="NewWorkEndpoint" name="name"/>
+            <property name="businessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="address"/>
+            <property name="responseTimeout"/>
+            <property name="encoding"/>
+            <property name="disableTransportTransformer"/>
+            <property name="mimeType"/>
+            <property name="connector-ref"/>
+            <property name="ref"/>
+            <property name="transformer-refs"/>
+            <property name="responseTransformer-refs"/>
+        </properties>
+    </global-element>
+    <global-element type="http://www.mulesoft.org/schema/mule/vm/endpoint" name="VM" entity-id="500cc8b9-053c-4e17-9444-0329e837b905">
+        <properties>
+            <property value="request-response" name="exchange-pattern"/>
+            <property value="work.ok" name="path"/>
+            <property value="AcceptedWorkEndpoint" name="name"/>
+            <property name="businessEventsLabel"/>
+            <property name="tracking:enable-default-events"/>
+            <property name="address"/>
+            <property name="responseTimeout"/>
+            <property name="encoding"/>
+            <property name="disableTransportTransformer"/>
+            <property name="mimeType"/>
+            <property name="connector-ref"/>
+            <property name="ref"/>
+            <property name="transformer-refs"/>
+            <property name="responseTransformer-refs"/>
+        </properties>
+    </global-element>
+    <global-unknown unknownName="WorkQueueProcessorStub" entity-id="d7b46d15-c940-4565-91d5-a8f7a3cf4683">
+        <content>&lt;simple-service xmlns=&quot;http://www.mulesoft.org/schema/mule/core&quot; name=&quot;WorkQueueProcessorStub&quot; endpoint-ref=&quot;AcceptedWorkEndpoint&quot;&gt;
+      &lt;test:component xmlns:test=&quot;http://www.mulesoft.org/schema/mule/test&quot;/&gt;
+    &lt;/simple-service&gt;</content>
+    </global-unknown>
+    <description></description>
+</mule-configuration>

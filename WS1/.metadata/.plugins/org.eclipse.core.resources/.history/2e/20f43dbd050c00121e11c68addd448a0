@@ -1,0 +1,23 @@
+package org.ordermgmt;
+
+import java.util.Random;
+import org.mule.api.annotations.ContainsTransformerMethods;
+import org.mule.api.annotations.Transformer;
+
+@ContainsTransformerMethods 
+public class Test1 {
+
+	/*
+	@Transformer
+	public Integer getId() {
+		return 12345;
+	}
+	*/
+	
+	@Transformer
+	public org.mule.DefaultMuleMessage modifyUUID(org.mule.DefaultMuleMessage msg) {
+		//msg.setUniqueId("e8111661-0b3f-11e2-bc86-05730a840173");
+		Thread.sleep(5000);
+		return msg;
+	}
+}
